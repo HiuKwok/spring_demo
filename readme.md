@@ -37,3 +37,20 @@ Carpark
  - address (String)
  - district (String)
  - evFriendly (Boolean)
+
+
+REST script:
+
+
+Read:
+curl -v localhost:8080/carparks
+curl -v localhost:8080/carparks/99
+
+Create:
+curl -X POST localhost:8080/carparks -H 'Content-type:application/json' -d '{"id":99,"name":"99_name","nature":"99_nature","address":"99_address","district":"99_district","evFriendly":false}'
+
+Update:
+curl -X PUT localhost:8080/carparks/99 -H 'Content-type:application/json' -d '{ "name":"UPDATE_name","nature":"UPDATE_nature","address":"UPDATE_address","district":"UPDATE_district","evFriendly":false}'
+
+Delete:
+curl -X DELETE localhost:8080/carparks/99

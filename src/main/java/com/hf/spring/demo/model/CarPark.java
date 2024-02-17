@@ -5,20 +5,20 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
 @Entity
-public class carPark {
+public class CarPark {
 
     @Id
-    private String id;
+    private Long id;
     private String name;
     private String nature;
     private String address;
     private String district;
     private Boolean evFriendly;
 
-    public carPark() {
+    public CarPark() {
     }
 
-    public carPark(String id, String name, String nature, String address, String district, Boolean evFriendly) {
+    public CarPark(Long id, String name, String nature, String address, String district, Boolean evFriendly) {
         this.id = id;
         this.name = name;
         this.nature = nature;
@@ -27,11 +27,11 @@ public class carPark {
         this.evFriendly = evFriendly;
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

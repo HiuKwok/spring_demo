@@ -1,7 +1,7 @@
 Log:
 
 
-
+https://spring.io/guides/tutorials/rest
 
 
 
@@ -12,6 +12,7 @@ References:
 
 JPA rest API:
  - https://www.baeldung.com/spring-boot-hibernate
+ - https://spring.io/guides/tutorials/rest
 
 H2-setup:
  - https://www.baeldung.com/spring-boot-h2-database

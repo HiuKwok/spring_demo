@@ -1,10 +1,13 @@
 package com.hf.spring.demo.web;
 
 import com.hf.spring.demo.model.CarPark;
+import com.hf.spring.demo.model.CarParkModelAssembler;
 import com.hf.spring.demo.repository.CarParkRepository;
 import com.hf.spring.demo.utils.CarParkNotFoundException;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,44 +30,56 @@ public class CarParkController {
 
     private final CarParkRepository repository;
 
-    public CarParkController(CarParkRepository repository) {
+    private final CarParkModelAssembler assembler;
+
+    public CarParkController(CarParkRepository repository, CarParkModelAssembler assembler) {
         this.repository = repository;
+        this.assembler = assembler;
     }
 
     @GetMapping("/carparks")
-    CollectionModel<EntityModel<CarPark>> all() {
+    public CollectionModel<EntityModel<CarPark>> all() {
 
         List<EntityModel<CarPark>> carparks = repository.findAll().stream()
-                .map(carpark -> EntityModel.of(carpark,
-                        linkTo(methodOn(CarParkController.class).one(carpark.getId())).withSelfRel(),
-                        linkTo(methodOn(CarParkController.class).all()).withRel("carparks")))
-                            .collect(Collectors.toList());
+                // Old of way of the conversion.
+                //                .map(carpark -> EntityModel.of(carpark,
+                //                        linkTo(methodOn(CarParkController.class).one(carpark.getId())).withSelfRel(),
+                //                        linkTo(methodOn(CarParkController.class).all()).withRel("carparks")))
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
         return CollectionModel.of(carparks,
                 linkTo(methodOn(CarParkController.class).all()).withSelfRel());
     }
 
     @PostMapping("/carparks")
-    CarPark newCarPark(@RequestBody CarPark newCarPark) {
-        return repository.save(newCarPark);
+    ResponseEntity<EntityModel<CarPark>> newCarPark(@RequestBody CarPark newCarPark) {
+
+        EntityModel<CarPark> em = assembler.toModel(repository.save(newCarPark));
+        // ResponseEntity used to return 201 Created message with Location response header.
+        return ResponseEntity
+                .created(em.getRequiredLink(IanaLinkRelations.SELF).toUri())
+                .body(em);
     }
 
     @GetMapping("/carparks/{id}")
-    EntityModel<CarPark> one(@PathVariable Long id) {
+    public EntityModel<CarPark> one(@PathVariable Long id) {
 
         CarPark carpark = repository.findById(id)
                 .orElseThrow(() -> new CarParkNotFoundException(id));
 
-        return EntityModel.of(carpark,
-            linkTo(methodOn(CarParkController.class).one(id)).withSelfRel(),
-            linkTo(methodOn(CarParkController.class).all()).withRel("carparks")
-        );
+        return assembler.toModel(carpark);
+        //      The old way of modeling item without Assembler.
+        //        return EntityModel.of(carpark,
+        //            linkTo(methodOn(CarParkController.class).one(id)).withSelfRel(),
+        //            linkTo(methodOn(CarParkController.class).all()).withRel("carparks")
+        //        );
     }
 
     @PutMapping("/carparks/{id}")
-    CarPark replaceCarPark(@RequestBody CarPark newCarPark,
+    ResponseEntity<?> replaceCarPark(@RequestBody CarPark newCarPark,
                            @PathVariable Long id) {
 
-        return repository.findById(id)
+        CarPark updatedCarpark =  repository.findById(id)
                 .map(carPark -> {
                     carPark.setName(newCarPark.getName());
                     carPark.setDistrict(newCarPark.getDistrict());
@@ -77,11 +92,20 @@ public class CarParkController {
                     newCarPark.setId(id);
                     return repository.save(newCarPark);
                 });
+
+        EntityModel<CarPark> em = assembler.toModel(updatedCarpark);
+        return ResponseEntity
+                .created(em.getRequiredLink(IanaLinkRelations.SELF).toUri())
+                .body(em);
     }
 
     @DeleteMapping("/carparks/{id}")
-    void deleteCarPark(@PathVariable Long id) {
+    ResponseEntity<?> deleteCarPark(@PathVariable Long id) {
+
         repository.deleteById(id);
+        // To return 204 No Content.
+        return ResponseEntity.noContent().build();
+
     }
 
 

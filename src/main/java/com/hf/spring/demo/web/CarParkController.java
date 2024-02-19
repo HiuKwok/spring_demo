@@ -2,6 +2,9 @@ package com.hf.spring.demo.web;
 
 import com.hf.spring.demo.model.CarPark;
 import com.hf.spring.demo.repository.CarParkRepository;
+import com.hf.spring.demo.utils.CarParkNotFoundException;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,6 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * RestController hints the Spring runtime to pick up for the REST endpoint.
@@ -25,8 +32,15 @@ public class CarParkController {
     }
 
     @GetMapping("/carparks")
-    List<CarPark> all() {
-        return repository.findAll();
+    CollectionModel<EntityModel<CarPark>> all() {
+
+        List<EntityModel<CarPark>> carparks = repository.findAll().stream()
+                .map(carpark -> EntityModel.of(carpark,
+                        linkTo(methodOn(CarParkController.class).one(carpark.getId())).withSelfRel(),
+                        linkTo(methodOn(CarParkController.class).all()).withRel("carparks")))
+                            .collect(Collectors.toList());
+        return CollectionModel.of(carparks,
+                linkTo(methodOn(CarParkController.class).all()).withSelfRel());
     }
 
     @PostMapping("/carparks")
@@ -35,10 +49,15 @@ public class CarParkController {
     }
 
     @GetMapping("/carparks/{id}")
-    CarPark one(@PathVariable Long id) throws Exception {
+    EntityModel<CarPark> one(@PathVariable Long id) {
 
-        return repository.findById(id)
-                .orElseThrow(() -> new Exception());
+        CarPark carpark = repository.findById(id)
+                .orElseThrow(() -> new CarParkNotFoundException(id));
+
+        return EntityModel.of(carpark,
+            linkTo(methodOn(CarParkController.class).one(id)).withSelfRel(),
+            linkTo(methodOn(CarParkController.class).all()).withRel("carparks")
+        );
     }
 
     @PutMapping("/carparks/{id}")

@@ -1,6 +1,8 @@
 Log:
 
 
+
+19/2:
 https://spring.io/guides/tutorials/rest
 
 
@@ -43,8 +45,8 @@ REST script:
 
 
 Read:
-curl -v localhost:8080/carparks
-curl -v localhost:8080/carparks/99
+curl -v localhost:8080/carparks | json_pp
+curl -v localhost:8080/carparks/99 | json_pp
 
 Create:
 curl -X POST localhost:8080/carparks -H 'Content-type:application/json' -d '{"id":99,"name":"99_name","nature":"99_nature","address":"99_address","district":"99_district","evFriendly":false}'

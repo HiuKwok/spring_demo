@@ -27,6 +27,9 @@ Project structure:
 H2-console:
  - http://localhost:8080/h2-console
 
+JWK:
+ - https://www.baeldung.com/spring-security-oauth2-jws-jwk
+
 
 Data model:
 

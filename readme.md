@@ -2,6 +2,10 @@ Log:
 
 
 
+
+27/2:
+https://spring.io/guides/gs/securing-web
+
 24/2:
 https://github.com/yifanzheng/spring-security-jwt
 
